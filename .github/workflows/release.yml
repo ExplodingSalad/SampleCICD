@@ -2,8 +2,6 @@ name: Create Release
 
 on:
   workflow_call:
-  push:
-    branches: [ "master" ]
 
 jobs:
   create-release:
@@ -23,8 +21,11 @@ jobs:
         id: extract_version
         run: |
           version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Project version: $version"
-          echo "::set-output name=version::$version"
+          echo "Original Project version: $version"
+          # Remove -SNAPSHOT suffix if present
+          release_version=${version%-SNAPSHOT}
+          echo "Release version: $release_version"
+          echo "::set-output name=version::$release_version"
 
       - name: Create GitHub Release
         id: create_release
