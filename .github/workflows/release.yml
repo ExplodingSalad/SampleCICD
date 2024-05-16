@@ -4,8 +4,33 @@ on:
   workflow_call:
 
 jobs:
+  extract-info:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract project name and version from pom.xml
+        id: extract_info
+        run: |
+          project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Original Project name: $project_name"
+          echo "Original Project version: $version"
+          # Remove -SNAPSHOT suffix if present
+          release_version=${version%-SNAPSHOT}
+          echo "Release version: $release_version"
+          echo "::set-output name=project_name::$project_name"
+          echo "::set-output name=version::$release_version"
+
+    outputs:
+      project_name: ${{ steps.extract_info.outputs.project_name }}
+      version: ${{ steps.extract_info.outputs.version }}
+
   create-release:
     runs-on: ubuntu-latest
+    needs: extract-info
 
     steps:
       - name: Checkout code
@@ -17,25 +42,46 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Extract version from pom.xml
-        id: extract_version
-        run: |
-          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Original Project version: $version"
-          # Remove -SNAPSHOT suffix if present
-          release_version=${version%-SNAPSHOT}
-          echo "Release version: $release_version"
-          echo "::set-output name=version::$release_version"
-
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.extract_version.outputs.version }}
-          release_name: Release ${{ steps.extract_version.outputs.version }}
+          tag_name: v${{ needs.extract_version.outputs.version }}
+          release_name: Release ${{ needs.extract_version.outputs.version }}
           draft: false
           prerelease: false
           body: |
-            Release notes for version ${{ steps.extract_version.outputs.version }}.
+            Release notes for version ${{ needs.extract_version.outputs.version }}.
+
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    needs: extract-info
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract_info.outputs.project_name }}:${{ needs.extract_info.outputs.version }} .
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract_info.outputs.project_name }}:${{ needs.extract_info.outputs.version }}
+
+      - name: Tag the Docker image with latest
+        run: |
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract_info.outputs.project_name }}:${{ needs.extract_info.outputs.version }} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract_info.outputs.project_name }}:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract_info.outputs.project_name }}:latest
