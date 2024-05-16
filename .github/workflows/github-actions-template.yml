@@ -58,7 +58,7 @@ jobs:
 
   create-github-release:
     runs-on: ubuntu-latest
-    needs: extract-info
+    needs: [extract-info, build]
     if: github.ref == 'refs/heads/master'
 
     steps:
@@ -86,7 +86,7 @@ jobs:
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
-    needs: extract-info
+    needs: [extract-info, build, create-github-release]
     if: github.ref == 'refs/heads/master'
 
     steps:
