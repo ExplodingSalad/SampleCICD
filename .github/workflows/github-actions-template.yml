@@ -2,15 +2,6 @@ name: template-pipeline
 
 on:
   workflow_call:
-    inputs:
-      docker_hub_username:
-        description: 'Docker Hub username'
-        required: true
-        type: string
-      docker_hub_access_token:
-        description: 'Docker Hub access token'
-        required: true
-        type: string
 
 jobs:
   extract-info:
@@ -99,6 +90,10 @@ jobs:
     if: github.ref == 'refs/heads/master'
 #    environment: Secrets
 
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -111,17 +106,17 @@ jobs:
 
       - name: Log in to Docker Hub
         run: |
-          echo "${{ inputs.docker_hub_access_token }}" | docker login -u "${{ inputs.docker_hub_username }}" --password-stdin
+          echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ inputs.docker_hub_username }}/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }} .
+          docker build -t $DOCKER_HUB_USERNAME/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }} .
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ inputs.docker_hub_username }}/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }}
+          docker push $DOCKER_HUB_USERNAME/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }}
 
       - name: Tag the Docker image with latest
         run: |
-          docker tag ${{ inputs.docker_hub_username }}/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }} ${{ inputs.docker_hub_username }}/${{ needs.extract-info.outputs.project_name }}:latest
-          docker push ${{ inputs.docker_hub_username }}/${{ needs.extract-info.outputs.project_name }}:latest
+          docker tag $DOCKER_HUB_USERNAME/${{ needs.extract-info.outputs.project_name }}:${{ needs.extract-info.outputs.version }} $DOCKER_HUB_USERNAME/${{ needs.extract-info.outputs.project_name }}:latest
+          docker push $DOCKER_HUB_USERNAME/${{ needs.extract-info.outputs.project_name }}:latest
