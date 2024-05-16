@@ -78,11 +78,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ needs.extract_version.outputs.version }}
-          release_name: Release ${{ needs.extract_version.outputs.version }}
+          release_name: Release ${{ needs.extract_info.outputs.version }}
           draft: false
           prerelease: false
           body: |
-            Release notes for version ${{ needs.extract_version.outputs.version }}.
+            Release notes for version ${{ needs.extract_info.outputs.version }}.
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
