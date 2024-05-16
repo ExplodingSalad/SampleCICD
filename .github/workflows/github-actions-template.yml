@@ -97,7 +97,7 @@ jobs:
 #      create-github-release
 #    ]
     if: github.ref == 'refs/heads/master'
-#    environment: Secrets
+    environment: Secrets
 
     steps:
       - name: Checkout code
