@@ -171,7 +171,8 @@ jobs:
           with:
             openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
             openshift_username: ${{ env.OPENSHIFT_USERNAME }}
-            openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
+#            openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
+            openshift_password: ""
             insecure_skip_tls_verify: false
             namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
