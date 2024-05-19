@@ -177,41 +177,26 @@ jobs:
 #            openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
             openshift_token: ${{ env.OPENSHIFT_TOKEN }}
             insecure_skip_tls_verify: false
+            namespace: "pumpingsalad-dev"
+
+        - name: Create and expose app
+          id: deploy-and-expose
+          uses: redhat-actions/oc-new-app@v1
+          with:
+            app_name: ${{ env.APP_NAME }}
+            image: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract-info.outputs.project_name }}:latest
             namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+            port: ${{ env.APP_PORT }}
 
-#        - name: Create and expose app
-#          id: deploy-and-expose
-#          uses: redhat-actions/oc-new-app@v1
-#          with:
-#            app_name: ${{ env.APP_NAME }}
-#            image: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract-info.outputs.project_name }}:latest
-#            namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-#            port: ${{ env.APP_PORT }}
-#
-#        - name: Print application URL
-#          env:
-#            ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
-#            SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
-#          run: |
-#            [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
-#            echo
-#            echo "======================== Your application is available at: ========================"
-#            echo ${{ env.ROUTE }}
-#            echo "==================================================================================="
-#            echo
-#            echo "Your app can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
-
-        - name: Create Pod in OpenShift
+        - name: Print application URL
+          env:
+            ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
+            SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
           run: |
-            oc apply -f - <<EOF
-            apiVersion: v1
-            kind: Pod
-            metadata:
-              name: ${{ needs.extract-info.outputs.project_name }}
-            spec:
-              containers:
-              - name: ${{ needs.extract-info.outputs.project_name }}
-                image: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ needs.extract-info.outputs.project_name }}:latest
-                ports:
-                - containerPort: 80
-            EOF
+            [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
+            echo
+            echo "======================== Your application is available at: ========================"
+            echo ${{ env.ROUTE }}
+            echo "==================================================================================="
+            echo
+            echo "Your app can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
