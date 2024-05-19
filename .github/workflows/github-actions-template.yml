@@ -170,7 +170,7 @@ jobs:
           uses: redhat-actions/oc-login@v1
           with:
             openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
-            openshift_username: ${{ env.OPENSHIFT_USER }}
+            openshift_username: ${{ env.OPENSHIFT_USERNAME }}
             openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
             insecure_skip_tls_verify: true
             namespace: ${{ env.OPENSHIFT_NAMESPACE }}
