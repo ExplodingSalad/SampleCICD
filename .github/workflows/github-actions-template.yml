@@ -13,6 +13,8 @@ on:
         required: true
       OPENSHIFT_PASSWORD:
         required: true
+      OPENSHIFT_TOKEN:
+        required: false
 
 jobs:
   extract-info:
@@ -157,6 +159,7 @@ jobs:
       OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
       OPENSHIFT_USERNAME: ${{ secrets.OPENSHIFT_USERNAME }}
       OPENSHIFT_PASSWORD: ${{ secrets.OPENSHIFT_PASSWORD }}
+      OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
       OPENSHIFT_NAMESPACE: ""
       APP_NAME: "${{ needs.extract-info.outputs.project_name }}"
       APP_PORT: ""
@@ -170,8 +173,9 @@ jobs:
           uses: redhat-actions/oc-login@v1
           with:
             openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
-            openshift_username: ${{ env.OPENSHIFT_USERNAME }}
-            openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
+#            openshift_username: ${{ env.OPENSHIFT_USERNAME }}
+#            openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
+            openshift_token: ${{ env.OPENSHIFT_TOKEN }}
             insecure_skip_tls_verify: false
             namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
