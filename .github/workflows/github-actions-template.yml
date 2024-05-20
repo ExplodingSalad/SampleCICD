@@ -168,6 +168,10 @@ jobs:
       SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
 
     steps:
+        # this step is necessary to retrieve the repo, it also needs to be before logging in!
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
         - name: Log in to OpenShift
           uses: redhat-actions/oc-login@v1
           with:
@@ -177,10 +181,6 @@ jobs:
             openshift_token: ${{ env.OPENSHIFT_TOKEN }}
             insecure_skip_tls_verify: false
             namespace: "pumpingsalad-dev"
-
-        # this step is necessary to retrieve the repo
-        - name: Checkout repository
-          uses: actions/checkout@v2
 
         - name: Create Pod in OpenShift
           run: |
