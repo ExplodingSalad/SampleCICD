@@ -179,6 +179,10 @@ jobs:
             insecure_skip_tls_verify: false
             namespace: "pumpingsalad-dev"
 
+        # this step is necessary to retrieve the repo
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
         - name: Create Pod in OpenShift
           run: |
               oc apply -f config.yaml
