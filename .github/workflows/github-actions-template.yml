@@ -160,7 +160,6 @@ jobs:
       OPENSHIFT_USERNAME: ${{ secrets.OPENSHIFT_USERNAME }}
       OPENSHIFT_PASSWORD: ${{ secrets.OPENSHIFT_PASSWORD }}
       OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
-      OPENSHIFT_NAMESPACE: ""
       APP_NAME: "${{ needs.extract-info.outputs.project_name }}"
       APP_PORT: ""
 
@@ -185,4 +184,4 @@ jobs:
 
         - name: Create Pod in OpenShift
           run: |
-              oc apply -f config.yaml
+              oc apply -f $GITHUB_WORKSPACE/config.yaml
