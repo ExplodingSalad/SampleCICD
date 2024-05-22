@@ -153,6 +153,7 @@ jobs:
       create-github-release,
       build-and-push-docker-image
     ]
+    if: github.ref == 'refs/heads/master'
     environment: Secrets
 
     env:
@@ -161,6 +162,7 @@ jobs:
       OPENSHIFT_PASSWORD: ${{ secrets.OPENSHIFT_PASSWORD }}
       OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
       APP_NAME: "${{ needs.extract-info.outputs.project_name }}"
+      IMAGE_TAG: "${{ needs.extract-info.outputs.version }}"
       APP_PORT: ""
 
     outputs:
@@ -179,6 +181,10 @@ jobs:
             openshift_token: ${{ env.OPENSHIFT_TOKEN }}
             insecure_skip_tls_verify: false
             namespace: "pumpingsalad-dev"
+
+        - name: Replace image tag in deployment file
+          run: |
+            sed -i "s|{{IMAGE_TAG}}|${{ env.IMAGE_TAG }}|g" deployment.yaml
 
         - name: Create Pod in OpenShift
           run: |
