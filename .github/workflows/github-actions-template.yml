@@ -2,10 +2,12 @@ name: template-pipeline
 
 on:
   workflow_call:
-    java_version:
-      description: 'Java version'
-      required: false
-      default: '17'
+    inputs:
+      java_version:
+        type: string
+        description: 'Java version'
+        required: false
+        default: '17'
     secrets:
       DOCKER_HUB_USERNAME:
         required: true
